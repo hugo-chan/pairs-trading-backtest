@@ -3,6 +3,8 @@ import quandl
 import pandas as pd
 from datetime import date
 import os
+import configparser
+
 
 class History:
 
@@ -66,8 +68,10 @@ class History:
             self.df.to_csv(data_dir)
 
 
-
 if __name__ == "__main__":
-    quandl.ApiConfig.api_key = "4qfrDwtCyVEC5Ez7eos1"
+    config = configparser.ConfigParser()
+    config.read("../config.ini")
+    quandl.ApiConfig.api_key = config.get("keys", "key")
+
     History("NASDAQ")
     # History("E-MINI")
