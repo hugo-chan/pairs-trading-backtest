@@ -36,9 +36,9 @@ class History:
 
         # rename to same index name and variable name
         df.index.names = ['Date']
-        df.rename(columns = {df.columns[0]: "Price?"}, inplace = True)
+        df.rename(columns = {df.columns[0]: "Close"}, inplace = True)
         # remove nan rows
-        df.dropna(subset=["Price?"], inplace=True)
+        df.dropna(subset=["Close"], inplace=True)
 
         return df
 
@@ -58,12 +58,12 @@ class History:
 
             print("orig", self.df)
             # print(self.df)
-            if list(self.df.columns) != ['Date', 'Price?']:
+            if list(self.df.columns) != ['Date', 'Close']:
                 # csv file has not been initialized
                 raise ColumnNameError
             else:
                 # get last date with price defined
-                last_date = self.df['Date'].iloc[self.df['Price?'].last_valid_index()]
+                last_date = self.df['Date'].iloc[self.df['Close'].last_valid_index()]
                 next_date = str(datetime.datetime.strptime(last_date, "%Y-%m-%d") + datetime.timedelta(days=1))
                 print("next_date", next_date)
 
