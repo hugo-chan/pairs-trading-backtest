@@ -53,7 +53,7 @@ class History:
         if not os.path.exists(folder_dir):
             os.mkdir(folder_dir)
 
-        data_dir = f"{folder_dir}/{self.name1.lower()}_{self.name2.lower()}.csv"
+        data_dir = f"{folder_dir}/{self.name1.lower()}_{self.name2.lower()}3.csv"
 
         try:
             self.df = pd.read_csv(data_dir)
