@@ -58,7 +58,7 @@ class History:
         try:
             self.df = pd.read_csv(data_dir)
 
-            if list(self.df.columns) != ['Date', 'Close 1', 'Close 2']:
+            if not all(col in list(self.df.columns) for col in ['Date', 'Close 1', 'Close 2']):
                 # csv file has not been initialized
                 raise ColumnNameError
             else:
