@@ -22,17 +22,19 @@ class History:
         }
     }
 
-    def __init__(self, name):        
-        self.name = name
-        self.code = self.match.get(self.name).get("code") # get subscription code
+    def __init__(self, name1, name2):        
+        self.name1 = name1
+        self.name2 = name2
+        self.code1 = self.match.get(self.name1).get("code") # get subscription code
+        self.code2 = self.match.get(self.name2).get("code") 
         self.update()
 
 
-    def get_history(self, start_date):
+    def get_history(self, start_date, name, code):
         today = datetime.date.today()
 
-        price_label = self.match.get(self.name).get("price_label")
-        df = quandl.get(self.code, start_date=start_date, end_date=str(today))[[price_label]] # get data
+        price_label = self.match.get(name).get("price_label")
+        df = quandl.get(code, start_date=start_date, end_date=str(today))[[price_label]] # get data
 
         # rename to same index name and variable name
         df.index.names = ['Date']
@@ -51,31 +53,37 @@ class History:
         if not os.path.exists(folder_dir):
             os.mkdir(folder_dir)
 
-        data_dir = f"{folder_dir}/{self.name.lower()}.csv"
+        data_dir = f"{folder_dir}/{self.name1.lower()}_{self.name2.lower()}.csv"
 
         try:
             self.df = pd.read_csv(data_dir)
 
-            print("orig", self.df)
-            # print(self.df)
-            if list(self.df.columns) != ['Date', 'Close']:
+            if list(self.df.columns) != ['Date', 'Close 1', 'Close 2']:
                 # csv file has not been initialized
                 raise ColumnNameError
             else:
                 # get last date with price defined
-                last_date = self.df['Date'].iloc[self.df['Close'].last_valid_index()]
-                next_date = str(datetime.datetime.strptime(last_date, "%Y-%m-%d") + datetime.timedelta(days=1))
-                print("next_date", next_date)
+                last_date = self.df['Date'].iloc[self.df['Close 1'].last_valid_index()]
+                update_date = str(datetime.datetime.strptime(last_date, "%Y-%m-%d") + datetime.timedelta(days=1))
 
-                # df for next date to today
-                new_df = self.get_history(next_date)
-
-                # append df to existing csv
-                new_df.to_csv(data_dir, mode = "a", header = False)
+                header = False
 
         except (FileNotFoundError, pd.errors.EmptyDataError, ColumnNameError):
-            self.df = self.get_history("2003-1-21")
-            self.df.to_csv(data_dir)
+            update_date = "2003-1-21"
+            header = True
+
+        finally:
+            new_df1 = self.get_history(update_date, self.name1, self.code1)
+            new_df2 = self.get_history(update_date, self.name2, self.code2)
+
+            new_df = pd.merge(
+                new_df1[['Close']], new_df2[['Close']], 
+                left_index = True, right_index = True, 
+                how = 'outer', suffixes = (' 1', ' 2'), sort = True
+            )
+            new_df.fillna(method = 'ffill', inplace = True)
+
+            new_df.to_csv(data_dir, mode = "a", header = header)
 
 
 if __name__ == "__main__":
@@ -84,5 +92,4 @@ if __name__ == "__main__":
     key = config.get("keys", "key")
     quandl.ApiConfig.api_key = key
 
-    History("NASDAQ")
-    History("E-MINI")
+    History("NASDAQ", "E-MINI")
