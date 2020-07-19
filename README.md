@@ -7,7 +7,10 @@ The code in this repo currently backtests NASDAQ and E-mini, but more pairs can 
 ## About the Strategy
 The core of this strategy is mean reversion. For each day, the strategy compares the price ratio with a rolling simple moving average. If the price ratio is significantly greater or smaller, the strategy will enter opposing positions in the pair, in hopes that the price ratio will revert back to the moving average which is when the positions will be exited. The length of the rolling window as well as the thresholds to enter or exit a position can be set.
 
-The performance of this strategy from 2004 can be seen below.
+The performance of this strategy from 2004 can be seen below:
+
+![alt text](https://raw.githubusercontent.com/hugo-chan/Pairs-Trading-Backtest/master/data/pnl.png)
+
 
 ### Limitations of the Strategy
 The strategy loses when the price difference between the pair increases from the time of enter and exit. 
