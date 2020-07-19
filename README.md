@@ -2,13 +2,12 @@
 
 A program to backtest a pairs trading strategy on pairs of financial instruments. The most up-to-date data is obtained from Quandl API, to which the strategy is applied. The daily position on the pair and the corresponding profit and loss are determined for each day in a CSV file. The cumulative profit and loss graph is generated.
 
-The code in this repo currently backtests NASDAQ and E-mini, but more pairs can be easily added as long as you have the Quandl code for the financial instrument.
+The code in this repo currently backtests NASDAQ and E-mini S&P 500 futures, but more pairs can be easily added as long as you have the Quandl code for the financial instrument.
 
 ## About the Strategy
 The core of this strategy is mean reversion. For each day, the strategy compares the price ratio with a rolling simple moving average. If the price ratio is significantly greater or smaller, the strategy will enter opposing positions in the pair, in hopes that the price ratio will revert back to the moving average which is when the positions will be exited. The length of the rolling window as well as the thresholds to enter or exit a position can be set.
 
 The performance of this strategy from 2004 can be seen below:
-
 ![alt text](https://raw.githubusercontent.com/hugo-chan/Pairs-Trading-Backtest/master/data/pnl.png)
 
 
