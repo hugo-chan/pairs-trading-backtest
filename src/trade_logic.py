@@ -17,17 +17,17 @@ class TradeLogic:
         }
     }
 
-    def __init__(self, name1, name2, z_enter, z_exit, look_back):
+    def __init__(self, name1, name2, z_enter, z_exit, window_len):
         # read into dataframes
         self.name1 = name1
         self.name2 = name2
         self.df = pd.read_csv(f"../data/{self.name1}_{self.name2}.csv")
         self.df.set_index('Date', drop = True, inplace = True)
-        self.df = self.trade_logic(z_enter, z_exit, look_back)
+        self.df = self.trade_logic(z_enter, z_exit, window_len)
         self.df.to_csv(f"../data/{self.name1}_{self.name2}.csv")
 
 
-    def trade_logic(self, z_enter, z_exit, look_back):
+    def trade_logic(self, z_enter, z_exit, window_len):
 
         def _calc_ratio_thresholds(start):
 
@@ -37,11 +37,11 @@ class TradeLogic:
             # calculate price ratio
             df_sliced["Ratio"] = df_sliced.loc[:, "Close 1"] / df_sliced.loc[:, "Close 2"]
             # calculate rolling mean and SD of ratio
-            mov_avg = df_sliced["Ratio"].rolling(look_back).mean().shift(1)
-            mov_sd = df_sliced["Ratio"].rolling(look_back).std().shift(1)
+            mov_avg = df_sliced["Ratio"].rolling(window_len).mean().shift(1)
+            mov_sd = df_sliced["Ratio"].rolling(window_len).std().shift(1)
 
-            # slice look_back dates
-            df_sliced = df_sliced.iloc[look_back:, :]     
+            # slice window_len dates
+            df_sliced = df_sliced.iloc[window_len:, :]     
 
             # calculate thresholds
             df_sliced['Buy Enter'] = mov_avg - (z_enter * mov_sd)
@@ -133,7 +133,7 @@ class TradeLogic:
             last_date = self.df['Ratio'].last_valid_index()
             last_date2 = self.df['Position 1'].last_valid_index()
             assert last_date == last_date2
-            ratio_start = self.df.index.get_loc(last_date) - (look_back - 1)
+            ratio_start = self.df.index.get_loc(last_date) - (window_len - 1)
             pos_start = self.df.index.get_loc(last_date2)
 
         except KeyError:
