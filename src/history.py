@@ -5,6 +5,8 @@ import datetime
 import os
 import configparser
 
+from trade_logic_v3 import TradeLogic
+
 
 class History:
 
@@ -28,6 +30,7 @@ class History:
         self.code1 = self.match.get(self.name1).get("code") # get subscription code
         self.code2 = self.match.get(self.name2).get("code") 
         self.update()
+        self.calc_pnl()
 
 
     def get_history(self, start_date, name, code):
@@ -53,7 +56,7 @@ class History:
         if not os.path.exists(folder_dir):
             os.mkdir(folder_dir)
 
-        data_dir = f"{folder_dir}/{self.name1.lower()}_{self.name2.lower()}3.csv"
+        data_dir = f"{folder_dir}/{self.name1.lower()}_{self.name2.lower()}.csv"
 
         try:
             self.df = pd.read_csv(data_dir)
@@ -84,6 +87,9 @@ class History:
             new_df.fillna(method = 'ffill', inplace = True)
 
             new_df.to_csv(data_dir, mode = "a", header = header)
+
+    def calc_pnl(self):
+        TradeLogic(self.name1.lower(), self.name2.lower())
 
 
 if __name__ == "__main__":

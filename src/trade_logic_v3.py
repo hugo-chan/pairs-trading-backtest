@@ -1,172 +1,152 @@
 # In[83]:
 import pandas as pd
 import numpy as np
-pd.options.mode.chained_assignment = None
-
-# read into dataframes
-ESvNQ = pd.read_csv(r"../data/nasdaq_e-mini3.csv") # convert to raw string
-ESvNQ.set_index('Date', drop = True, inplace = True) # set date to be index
-specs = pd.read_csv(r"../data/raw/contract specifications.csv")
-
-# In[87]:
-
-
-def obtain_specs(df, specs):
-    # find out which pair, then index to that row using the ticker
-    # store multiplier, tick size, exchange fees, commissions, NFA fees, and ticker in a dictionary
-    colname = df.columns[0] # find out which pair we are looking at
-    if (colname == 'Close_ES'):
-        ticker_A = 'ES'
-        ticker_B = 'NQ'
-    elif (colname == 'Close_CL'):
-        ticker_A = 'CL'
-        ticker_B = 'NG'
-    else:
-        ticker_A = 'ZB'
-        ticker_B = 'ZN'
-    row_A = specs.loc[specs['Ticker'] == ticker_A] # extract the rows of interest from specs
-    row_B = specs.loc[specs['Ticker'] == ticker_B]
-    specs_A = {"Multiplier" : row_A.iat[0, 1], # put specifications in dictionary
-              "Tick Size" : row_A.iat[0, 2],
-              "Exchange Fees" : row_A.iat[0, 3],
-              "Commission" : row_A.iat[0, 4],
-              "NFA Fees" : row_A.iat[0, 5],
-              "Class" : ticker_A}
-    specs_B = {"Multiplier" : row_B.iat[0, 1],
-              "Tick Size" : row_B.iat[0, 2],
-              "Exchange Fees" : row_B.iat[0, 3],
-              "Commission" : row_B.iat[0, 4],
-              "NFA Fees" : row_B.iat[0, 5],
-              "Class" : ticker_B}
-    return (specs_A, specs_B) # return tuple
-
 
 # In[96]:
 
+class TradeLogic:
 
-def trade_logic(df, specs, z_enter, z_exit, look_back):
+    specs = {
+        "nasdaq": {
+            "Multiplier": 20,
+            "Tick Size": 0.25,
+            "Fees": 2.05
+        },
+        "e-mini": {
+            "Multiplier": 50,
+            "Tick Size": 0.25,
+            "Fees": 2.05
+        }
+    }
 
-    specs = obtain_specs(df, specs) # obtain specificiations for this pair
+    def __init__(self, name1, name2):
+        # read into dataframes
+        self.name1 = name1
+        self.name2 = name2
+        self.df = pd.read_csv(f"../data/{self.name1}_{self.name2}.csv") # convert to raw string
+        self.df.set_index('Date', drop = True, inplace = True) # set date to be index
+        self.df = self.trade_logic(2, 1, 252)
+        self.df.to_csv(f"../data/{self.name1}_{self.name2}.csv")
 
-    def _calc_ratio_thresholds(df, start):
 
-        # get view of dataframe containing non-updated data and 252 rows before it
-        df_sliced = df.iloc[start:, :]
+    def trade_logic(self, z_enter, z_exit, look_back):
 
-        # calculate price ratio
-        ratio = df_sliced.loc[:, "Close 1"] / df_sliced.loc[:, "Close 2"]
-        # calculate rolling mean and SD of ratio
-        mov_avg = ratio.rolling(look_back).mean().shift(1)
-        mov_sd = df_sliced["Ratio"].rolling(look_back).std().shift(1)
+        def _calc_ratio_thresholds(start):
 
-        # slice look_back dates
-        df_sliced = df_sliced.iloc[look_back:, :]     
+            # get view of dataframe containing non-updated data and 252 rows before it
+            df_sliced = self.df.iloc[start:, :]
 
-        # calculate thresholds
-        df_sliced['Buy Enter'] = mov_avg - (z_enter * mov_sd)
-        df_sliced['Buy Exit'] = mov_avg - (z_exit * mov_sd)
-        df_sliced['Sell Exit'] = mov_avg + (z_exit * mov_sd)
-        df_sliced['Sell Enter'] = mov_avg + (z_enter * mov_sd)
+            # calculate price ratio
+            df_sliced["Ratio"] = df_sliced.loc[:, "Close 1"] / df_sliced.loc[:, "Close 2"]
+            # calculate rolling mean and SD of ratio
+            mov_avg = df_sliced["Ratio"].rolling(look_back).mean().shift(1)
+            mov_sd = df_sliced["Ratio"].rolling(look_back).std().shift(1)
 
-        if start:
-            return df
-        else:
-            return df_sliced
+            # slice look_back dates
+            df_sliced = df_sliced.iloc[look_back:, :]     
 
-    def _determine_positions(df, start):
+            # calculate thresholds
+            df_sliced['Buy Enter'] = mov_avg - (z_enter * mov_sd)
+            df_sliced['Buy Exit'] = mov_avg - (z_exit * mov_sd)
+            df_sliced['Sell Exit'] = mov_avg + (z_exit * mov_sd)
+            df_sliced['Sell Enter'] = mov_avg + (z_enter * mov_sd)
 
-        # initialize previous position for first iteration of loop
-        if start == 0:
-            prev_pos = 0
+            if not start:
+                self.df = df_sliced
 
-            # there is no previous price, therefore backwards fill ==> P&L of first day = 0
-            prev_price_1 = df.iloc[start+1]["Close 1"]
-            prev_price_2 = df.iloc[start+1]["Close 2"]
-        else:
-            prev_pos = df.iloc[start]["M1 Position"]
-            prev_price_1 = df.iloc[start]["Close 1"]
-            prev_price_2 = df.iloc[start]["Close 2"]
+        def _determine_positions(start):
 
-        # get view of dataframe containing non-updated data and one row before it
-        df_sliced = df.iloc[start+1:, :]
-
-        for i in range(len(df_sliced.index)):
-            
-            date = df_sliced.index[i]
-            ratio = df_sliced.loc[date, 'Ratio']
-            pos = 0
-            
-            # compute position based on previous day's
-            if prev_pos == 0:
-                if  ratio <= df_sliced.loc[date, 'Buy Enter']:
-                    pos = 1
-                elif ratio >= df_sliced.loc[date, 'Sell Enter']:
-                    pos = -1
-            elif prev_pos == 1:
-                if ratio < df_sliced.loc[date, 'Buy Exit']:
-                    pos = 1
-                elif ratio >= df_sliced.loc[date, 'Sell Enter']:
-                    pos = -1
+            # initialize previous position for first iteration of loop
+            if start == 0:
+                prev_pos = 0
+                # there is no previous price ==> P&L of first day = 0
+                prev_price_1 = self.df.iloc[start+1]["Close 1"]
+                prev_price_2 = self.df.iloc[start+1]["Close 2"]
+                prev_cumpnl = 0
             else:
-                if ratio <= df_sliced.loc[date, 'Buy Enter']:
-                    pos = 1
-                elif ratio > df_sliced.loc[date, 'Sell Exit']:
-                    pos = -1
+                prev_pos = self.df.iloc[start]["Position 1"]
+                prev_price_1 = self.df.iloc[start]["Close 1"]
+                prev_price_2 = self.df.iloc[start]["Close 2"]
+                prev_cumpnl = self.df.iloc[start]["Cum P&L"]
 
-            df_sliced.loc[date, 'M1 Position'] = pos
-            df_sliced.loc[date, 'M2 Position'] = -1 * pos
+            # get view of dataframe containing non-updated data and one row before it
+            df_sliced = self.df.iloc[start+1:, :]
 
+            for i in range(len(df_sliced.index)):
+                
+                date = df_sliced.index[i]
+                ratio = df_sliced.loc[date, 'Ratio']
+                pos = 0
+                
+                # compute position based on previous day's
+                if prev_pos == 0:
+                    if  ratio <= df_sliced.loc[date, 'Buy Enter']:
+                        pos = 1
+                    elif ratio >= df_sliced.loc[date, 'Sell Enter']:
+                        pos = -1
+                elif prev_pos == 1:
+                    if ratio < df_sliced.loc[date, 'Buy Exit']:
+                        pos = 1
+                    elif ratio >= df_sliced.loc[date, 'Sell Enter']:
+                        pos = -1
+                else:
+                    if ratio <= df_sliced.loc[date, 'Buy Enter']:
+                        pos = 1
+                    elif ratio > df_sliced.loc[date, 'Sell Exit']:
+                        pos = -1
 
-            curr_price_1 = df_sliced.loc[date, 'Close 1']
-            curr_price_2 = df_sliced.loc[date, 'Close 2']
+                df_sliced.loc[date, 'Position 1'] = pos
+                df_sliced.loc[date, 'Position 2'] = -1 * pos
 
-            price_delta_1 = curr_price_1 - prev_price_1
-            price_delta_2 = curr_price_2 - prev_price_2
+                # compute P&L
+                curr_price_1 = df_sliced.loc[date, 'Close 1']
+                curr_price_2 = df_sliced.loc[date, 'Close 2']
 
-            pnl_1 = pos * price_delta_1
-            pnl_2 = -1 * pos * price_delta_2
-            
-            if prev_pos != pos:
-                # add transaction cost
-                pnl_1 += 0 # todo
-                pnl_2 += 0 # todo
+                price_delta_1 = curr_price_1 - prev_price_1
+                price_delta_2 = curr_price_2 - prev_price_2
 
-            df_sliced.loc[date, 'M1 P&L'] = pnl_1
-            df_sliced.loc[date, 'M2 P&L'] = pnl_2
+                specs1 = self.specs[self.name1]
+                specs2 = self.specs[self.name2]
 
-            prev_pos = pos
-            prev_price_1 = curr_price_1
-            prev_price_2 = curr_price_2
+                # use prev_pos bc we always enter position EOD
+                pnl_1 = prev_pos * price_delta_1 * specs1["Multiplier"]
+                pnl_2 = -1 * prev_pos * price_delta_2 * specs2["Multiplier"]
+                
+                if prev_pos != pos:
+                    # add transaction cost
+                    pnl_1 -= (specs1["Multiplier"] * specs1["Tick Size"]) + specs1["Fees"]
+                    pnl_2 -= (specs2["Multiplier"] * specs2["Tick Size"]) + specs2["Fees"]
 
-            # compute P&L
+                df_sliced.loc[date, 'P&L 1'] = pnl_1
+                df_sliced.loc[date, 'P&L 2'] = pnl_2
+                df_sliced.loc[date, 'P&L'] = pnl_1 + pnl_2
+                df_sliced.loc[date, 'Cum P&L'] = prev_cumpnl + pnl_1 + pnl_2
 
-        # print("SDFD", df_sliced)
-        # print("START", start)
-        if start:
-            return df
-        else:
-            return df_sliced
+                # set previous to current
+                prev_pos = pos
+                prev_price_1 = curr_price_1
+                prev_price_2 = curr_price_2
+                prev_cumpnl += pnl_1 + pnl_2
+
+            if not start:
+                self.df = df_sliced
+        
+        try:
+            last_date = self.df['Ratio'].last_valid_index()
+            last_date2 = self.df['Position 1'].last_valid_index()
+            assert last_date == last_date2
+            ratio_start = self.df.index.get_loc(last_date) - (look_back - 1)
+            pos_start = self.df.index.get_loc(last_date2)
+
+        except KeyError:
+            # data not initialized
+            ratio_start = 0
+            pos_start = 0
+
+        # self.df = _calc_ratio_thresholds(ratio_start)
+        # self.df = _determine_positions(pos_start)
+        _calc_ratio_thresholds(ratio_start)
+        _determine_positions(pos_start)
+
+        return self.df
     
-    try:
-        last_date = df['Ratio'].last_valid_index()
-        last_date2 = df['M1 Position'].last_valid_index()
-        assert last_date == last_date2
-        ratio_start = df.index.get_loc(last_date) - (look_back - 1)
-        pos_start = df.index.get_loc(last_date2)
-
-    except KeyError:
-        ratio_start = 0
-        pos_start = 0
-
-    # print(df)
-    df = _calc_ratio_thresholds(df, ratio_start)
-    print("SDFSDF", df)
-    df = _determine_positions(df, pos_start)
-
-    return df
-    
-
-# In[97]:
-
-return_df_ESvNQ = trade_logic(ESvNQ, specs, 2, 1, 252)
-return_df_ESvNQ.to_csv(r"../data/nasdaq_e-mini3.csv")
