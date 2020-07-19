@@ -17,13 +17,13 @@ class TradeLogic:
         }
     }
 
-    def __init__(self, name1, name2):
+    def __init__(self, name1, name2, z_enter, z_exit, look_back):
         # read into dataframes
         self.name1 = name1
         self.name2 = name2
         self.df = pd.read_csv(f"../data/{self.name1}_{self.name2}.csv")
         self.df.set_index('Date', drop = True, inplace = True)
-        self.df = self.trade_logic(2, 1, 252)
+        self.df = self.trade_logic(z_enter, z_exit, look_back)
         self.df.to_csv(f"../data/{self.name1}_{self.name2}.csv")
 
 

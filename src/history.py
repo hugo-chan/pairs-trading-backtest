@@ -24,14 +24,14 @@ class History:
         }
     }
 
-    def __init__(self, name1, name2):        
+    def __init__(self, name1, name2, z_enter, z_exit, look_back):        
         self.name1 = name1
         self.name2 = name2
         # get subscription codes
         self.code1 = self.match.get(self.name1).get("code")
         self.code2 = self.match.get(self.name2).get("code") 
         self.update()
-        self.calc_pnl()
+        self.calc_pnl(z_enter, z_exit, look_back)
 
 
     def get_history(self, start_date, name, code):
@@ -90,8 +90,8 @@ class History:
 
             new_df.to_csv(data_dir, mode = "a", header = header)
 
-    def calc_pnl(self):
-        TradeLogic(self.name1.lower(), self.name2.lower())
+    def calc_pnl(self, z_enter, z_exit, look_back):
+        TradeLogic(self.name1.lower(), self.name2.lower(), z_enter, z_exit, look_back)
 
 
 if __name__ == "__main__":
@@ -100,4 +100,9 @@ if __name__ == "__main__":
     key = config.get("keys", "key")
     quandl.ApiConfig.api_key = key
 
-    History("NASDAQ", "E-MINI")
+    config.read("../params.ini")
+    z_enter = int(config.get("params", "z_enter"))
+    z_exit = int(config.get("params", "z_exit"))
+    look_back = int(config.get("params", "look_back"))
+
+    History("NASDAQ", "E-MINI", z_enter, z_exit, look_back)
