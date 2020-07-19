@@ -17,7 +17,7 @@ def plot_cumpnl(data_dir):
     ax.xaxis.set_minor_locator(mdates.MonthLocator())
 
     plt.plot(dates, df['Cum P&L'], linewidth = 1.0)
-    plt.title("Performance of Strategy")
+    plt.title("Performance of Strategy on NASDAQ and E-mini")
     plt.ylabel("P&L (USD)")
     plt.xlabel("Time")
     plt.figtext(0.13, 0.02, f"Last updated: {datetime.date.today()}", ha='left', fontsize=9)
