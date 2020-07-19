@@ -1,8 +1,6 @@
-# In[83]:
 import pandas as pd
 import numpy as np
-
-# In[96]:
+pd.options.mode.chained_assignment = None
 
 class TradeLogic:
 
@@ -23,8 +21,8 @@ class TradeLogic:
         # read into dataframes
         self.name1 = name1
         self.name2 = name2
-        self.df = pd.read_csv(f"../data/{self.name1}_{self.name2}.csv") # convert to raw string
-        self.df.set_index('Date', drop = True, inplace = True) # set date to be index
+        self.df = pd.read_csv(f"../data/{self.name1}_{self.name2}.csv")
+        self.df.set_index('Date', drop = True, inplace = True)
         self.df = self.trade_logic(2, 1, 252)
         self.df.to_csv(f"../data/{self.name1}_{self.name2}.csv")
 
@@ -143,10 +141,7 @@ class TradeLogic:
             ratio_start = 0
             pos_start = 0
 
-        # self.df = _calc_ratio_thresholds(ratio_start)
-        # self.df = _determine_positions(pos_start)
         _calc_ratio_thresholds(ratio_start)
         _determine_positions(pos_start)
 
         return self.df
-    

@@ -5,7 +5,7 @@ import datetime
 import os
 import configparser
 
-from trade_logic_v3 import TradeLogic
+from trade_logic import TradeLogic
 
 
 class History:
@@ -27,7 +27,8 @@ class History:
     def __init__(self, name1, name2):        
         self.name1 = name1
         self.name2 = name2
-        self.code1 = self.match.get(self.name1).get("code") # get subscription code
+        # get subscription codes
+        self.code1 = self.match.get(self.name1).get("code")
         self.code2 = self.match.get(self.name2).get("code") 
         self.update()
         self.calc_pnl()
@@ -37,7 +38,8 @@ class History:
         today = datetime.date.today()
 
         price_label = self.match.get(name).get("price_label")
-        df = quandl.get(code, start_date=start_date, end_date=str(today))[[price_label]] # get data
+        # get data
+        df = quandl.get(code, start_date=start_date, end_date=str(today))[[price_label]]
 
         # rename to same index name and variable name
         df.index.names = ['Date']
