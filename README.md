@@ -1,6 +1,6 @@
 # Pairs-Trading-Backtest
 
-Program to backtest a pairs trading strategy on any pair of financial instruments. The most up-to-date data is obtained from Quandl API, to which the strategy is applied. The daily position on the pair and the corresponding profit and loss are determined for each day in a CSV file. The cumulative profit and loss graph is generated.
+A program to backtest a pairs trading strategy on pairs of financial instruments. The most up-to-date data is obtained from Quandl API, to which the strategy is applied. The daily position on the pair and the corresponding profit and loss are determined for each day in a CSV file. The cumulative profit and loss graph is generated.
 
 The code in this repo currently backtests NASDAQ and E-mini, but more pairs can be easily added as long as you have the Quandl code for the financial instrument.
 
