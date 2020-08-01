@@ -96,11 +96,11 @@ class History:
 
 if __name__ == "__main__":
     config = configparser.ConfigParser()
-    config.read("../config.ini")
+    config.read("../etc/config.ini")
     key = config.get("keys", "key")
     quandl.ApiConfig.api_key = key
 
-    config.read("../params.ini")
+    config.read("../etc/params.ini")
     z_enter = int(config.get("params", "z_enter"))
     z_exit = int(config.get("params", "z_exit"))
     window_len = int(config.get("params", "window_len"))

@@ -1,6 +1,11 @@
+certifi==2020.6.20
+chardet==3.0.4
 cycler==0.10.0
+idna==2.10
+inflection==0.5.0
 kiwisolver==1.2.0
 matplotlib==3.3.0
+more-itertools==8.4.0
 numpy==1.19.1
 pandas==1.1.0
 Pillow==7.2.0
@@ -8,4 +13,7 @@ pkg-resources==0.0.0
 pyparsing==2.4.7
 python-dateutil==2.8.1
 pytz==2020.1
+Quandl==3.5.2
+requests==2.24.0
 six==1.15.0
+urllib3==1.25.10
