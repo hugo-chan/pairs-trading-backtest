@@ -5,8 +5,7 @@ import datetime
 import os
 import configparser
 
-from trade_logic import TradeLogic
-
+from src.trade_logic import TradeLogic
 
 class History:
 
@@ -110,6 +109,3 @@ class History:
             self.z_exit, 
             self.window_len
         )
-
-if __name__ == "__main__":
-    History("NASDAQ", "E-MINI")

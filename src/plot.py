@@ -3,8 +3,8 @@ import matplotlib.dates as mdates
 import pandas as pd
 import datetime
 
-def plot_cumpnl(data_dir):
-    df = pd.read_csv(data_dir)
+def plot_cumpnl(first, second):
+    df = pd.read_csv(f"../data/{first.lower()}_{second.lower()}.csv")
     assert "Cum P&L" in list(df.columns)
     dates = pd.to_datetime(df["Date"])
     
@@ -21,7 +21,4 @@ def plot_cumpnl(data_dir):
     plt.ylabel("P&L (USD)")
     plt.xlabel("Time")
     plt.figtext(0.13, 0.02, f"Last updated: {datetime.date.today()}", ha='left', fontsize=9)
-    plt.savefig("../data/pnl.png")
-
-if  __name__ == "__main__":
-    plot_cumpnl("../data/nasdaq_e-mini.csv")
+    plt.savefig(f"../data/{first.lower()}_{second.lower()}_pnl.png")
