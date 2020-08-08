@@ -22,6 +22,29 @@ Both scenarios described above are related to the accuracy of the rolling moving
 
 Alternatively, a dynamic threshold can be used to automatically account for changes in the pair relationship.
 
+## Installation
+### Clone
+
+- Clone this repo to your local machine using `https://github.com/hugo-chan/pairs-trading-backtest.git`
+
+### Setup
+
+> Install the packages listed in requirements.txt
+
+```shell
+$ pip install -r .\pairs-trading-backtest\requirements.txt
+```
+
+> Create `etc/config.ini` containing your Quandl API key
+```
+[keys]
+key = XXXXXX
+```
+
+> Initialize or run the program
+```shell
+$ python .\pairs-trading-backtest\
+```
 
 ## Built With
 
