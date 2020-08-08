@@ -10,7 +10,6 @@ The core of this strategy is mean reversion. For each day, the strategy compares
 The performance of this strategy from 2004 can be seen below:
 ![alt text](https://raw.githubusercontent.com/hugo-chan/Pairs-Trading-Backtest/master/data/pnl.png)
 
-
 ### Limitations of the Strategy
 The strategy loses when the price difference between the pair increases from the time of enter and exit.
 
