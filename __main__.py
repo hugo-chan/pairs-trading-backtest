@@ -3,7 +3,6 @@ from src.plot import plot_cumpnl
 
 import os
 os.chdir(os.path.dirname(os.path.abspath(__file__)) + "/src")
-print(os.getcwd())
 
 pairs = [("NASDAQ", "E-MINI")]
 
