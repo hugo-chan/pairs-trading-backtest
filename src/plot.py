@@ -21,4 +21,5 @@ def plot_cumpnl(first, second):
     plt.ylabel("P&L (USD)")
     plt.xlabel("Time")
     plt.figtext(0.13, 0.02, f"Last updated: {datetime.date.today()}", ha='left', fontsize=9)
-    plt.savefig(f"../data/{first.lower()}_{second.lower()}_pnl.png")
+    out_dir = f"../data/{first.lower()}_{second.lower()}_pnl.png"
+    plt.savefig(out_dir)
