@@ -24,14 +24,27 @@ class History:
         }
     }
 
-    def __init__(self, name1, name2, z_enter, z_exit, window_len):        
+    def __init__(self, name1, name2):        
         self.name1 = name1
         self.name2 = name2
         # get subscription codes
         self.code1 = self.match.get(self.name1).get("code")
         self.code2 = self.match.get(self.name2).get("code") 
+        
+        self.setup()
         self.update()
-        self.calc_pnl(z_enter, z_exit, window_len)
+        self.calc_pnl()
+
+    def setup(self):
+        config = configparser.ConfigParser()
+        config.read("../etc/config.ini")
+        key = config.get("keys", "key")
+        quandl.ApiConfig.api_key = key
+
+        config.read("../etc/params.ini")
+        self.z_enter = int(config.get("params", "z_enter"))
+        self.z_exit = int(config.get("params", "z_exit"))
+        self.window_len = int(config.get("params", "window_len"))
 
 
     def get_history(self, start_date, name, code):
@@ -50,7 +63,6 @@ class History:
         return df
 
     def update(self):
-
         class ColumnNameError(Exception):
             pass
 
@@ -90,19 +102,14 @@ class History:
 
             new_df.to_csv(data_dir, mode = "a", header = header)
 
-    def calc_pnl(self, z_enter, z_exit, window_len):
-        TradeLogic(self.name1.lower(), self.name2.lower(), z_enter, z_exit, window_len)
-
+    def calc_pnl(self):
+        TradeLogic(
+            self.name1.lower(), 
+            self.name2.lower(), 
+            self.z_enter, 
+            self.z_exit, 
+            self.window_len
+        )
 
 if __name__ == "__main__":
-    config = configparser.ConfigParser()
-    config.read("../etc/config.ini")
-    key = config.get("keys", "key")
-    quandl.ApiConfig.api_key = key
-
-    config.read("../etc/params.ini")
-    z_enter = int(config.get("params", "z_enter"))
-    z_exit = int(config.get("params", "z_exit"))
-    window_len = int(config.get("params", "window_len"))
-
-    History("NASDAQ", "E-MINI", z_enter, z_exit, window_len)
+    History("NASDAQ", "E-MINI")
