@@ -11,7 +11,7 @@ The performance of this strategy from 2004 can be seen below:
 ![alt text](https://raw.githubusercontent.com/hugo-chan/pairs-trading-backtest/master/data/n_e_pnl.png)
 
 ### Limitations of the Strategy
-The strategy loses when the price difference between the pair increases from the time of enter and exit.
+The strategy loses when the price difference between the pair (adjusted by each instrument's respective multiplier) increases from the time of enter and exit.
 
 This may occur when (1) the moving average price ratio changes as a result of historical price movements in the window. The change in the moving average will cause the entry and exit thresholds to change. So even when the price between the two instruments diverges, if the change in the moving average is large enough, the position may be exited at a loss. This problem can be mitigated by reducing the length of the rolling window, but then there may be a tradeoff for increased exposure to short-term noise.
 
