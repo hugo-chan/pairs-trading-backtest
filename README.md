@@ -25,9 +25,11 @@ Alternatively, a dynamic threshold can be used to automatically account for chan
 ## Installation
 ### Clone
 
-- Clone this repo to your local machine using `https://github.com/hugo-chan/pairs-trading-backtest.git`
+> Clone this repo to your local machine
 
-### Setup
+```shell
+$ git clone https://github.com/hugo-chan/pairs-trading-backtest.git
+```
 
 > Install the packages listed in requirements.txt
 
