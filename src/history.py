@@ -5,7 +5,7 @@ import datetime
 import os
 import configparser
 
-from src.trade_logic import TradeLogic
+from .trade_logic import TradeLogic
 
 class History:
 
