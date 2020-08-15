@@ -20,7 +20,7 @@ This may also occur when (2) there is a fundamental change in the relationship b
 ### Potential Improvements of the Strategy
 Both scenarios described above are related to the accuracy of the rolling moving average in reflecting the current fair ratio between the two instruments. In other words, the current strategy is susceptible to large price movements occuring in either end of the rolling window. This problem can be mitigated by applying a exponential moving average (EMA) instead of a simple moving average (SMA). That way, large price movements at the start of the rolling window will have less of a effect while large price movements at the end of the rolling window will be more effectively captured, more accurately predicting the current fair price ratio between the pair of instruments.
 
-Alternatively, a dynamic threshold can be used to automatically account for changes in the pair relationship.
+Alternatively, a dynamic threshold can be used to automatically account for changes in the pair relationship. Further, a dollar-neutral strategy, instead of applying a constant multiplier to each instrument, will reduce our directional bias.
 
 ## Installation
 
